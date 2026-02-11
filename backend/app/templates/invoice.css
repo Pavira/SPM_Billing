@@ -1,0 +1,445 @@
+/* WeasyPrint Invoice CSS */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@page {
+  size: 210mm 297mm;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  color: #000;
+  font-size: 9pt;
+  line-height: 1.2;
+}
+
+.page {
+  width: 210mm;
+  height: 297mm;
+  padding: 0;
+  margin: 0;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* HEADER */
+.invoice-header {
+  height: 10mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.invoice-header h1 {
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+/* MAIN CONTAINER */
+.invoice-container {
+  width: 190mm;
+  border: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+  font-size: 9pt;
+}
+
+/* SECTION 1: CONSIGNEE DETAILS (78mm) */
+.section-1 {
+  height: 78mm;
+  border-bottom: 1px solid #000;
+  display: flex;
+}
+
+.left-60 {
+  width: 114mm;
+  border-right: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-40 {
+  width: 76mm;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-box {
+  height: 26mm;
+  border-bottom: 1px solid #000;
+  padding-left: 1mm;
+  padding-top: 0.5mm;
+  padding-right: 0.5mm;
+  font-size: 9pt;
+  line-height: 1.4;
+  overflow: hidden;
+}
+
+.detail-box:last-child {
+  border-bottom: none;
+}
+
+.company-details {
+  font-size: 9pt;
+}
+
+.company-name {
+  font-weight: bold;
+  font-size: 10pt;
+}
+
+.label {
+  font-size: 8pt;
+  padding-bottom: 1mm;
+}
+
+.name {
+  font-weight: bold;
+  font-size: 10pt;
+}
+
+/* META SECTION */
+.meta-section {
+  height: 39mm;
+  border-bottom: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.meta-row {
+  height: 7.8mm;
+  display: flex;
+  border-bottom: 1px solid #000;
+  font-size: 8pt;
+}
+
+.meta-row:last-child {
+  border-bottom: none;
+}
+
+.meta-col-left {
+  width: 38mm;
+  border-right: 1px solid #000;
+  padding-left: 1mm;
+  padding-top: 0.5mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.meta-col-right {
+  width: 38mm;
+  padding-left: 1mm;
+  padding-top: 0.5mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.meta-label {
+  font-size: 8pt;
+  display: block;
+}
+
+.meta-value {
+  font-weight: bold;
+  font-size: 9pt;
+  margin: 0;
+}
+
+.transport-section {
+  height: 39mm;
+  padding: 3mm;
+  font-size: 9pt;
+}
+
+/* SECTION 2: ITEM TABLE */
+.section-2 {
+  height: 130mm;
+  border-bottom: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-header {
+  height: 10mm;
+  display: flex;
+  border-bottom: 1px solid #000;
+  font-weight: bold;
+  font-size: 9pt;
+  text-align: center;
+}
+
+.th {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #000;
+  padding: 1mm;
+}
+
+.th:last-child {
+  border-right: none;
+}
+
+.th.si {
+  width: 5mm;
+}
+
+.th.description {
+  width: 80mm;
+}
+
+.th.hsn {
+  width: 15mm;
+}
+
+.th.gst {
+  width: 15mm;
+}
+
+.th.qty {
+  width: 15mm;
+}
+
+.th.rate {
+  width: 20mm;
+}
+
+.th.per {
+  width: 10mm;
+}
+
+.th.amount {
+  width: 30mm;
+}
+
+.table-body {
+  height: 120mm;
+  border-bottom: 1px solid #000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 8pt;
+}
+
+.table-row {
+  height: 8mm;
+  display: flex;
+  border-bottom: 1px solid #000;
+}
+
+.table-row.empty-row {
+  border-bottom-color: #ccc;
+}
+
+.td {
+  display: flex;
+  align-items: center;
+  padding: 0.5mm 1mm;
+  border-right: 1px solid #000;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.td:last-child {
+  border-right: none;
+}
+
+.td.si {
+  width: 5mm;
+  justify-content: center;
+}
+
+.td.description {
+  width: 80mm;
+  padding-left: 1mm;
+}
+
+.td.hsn {
+  width: 15mm;
+  justify-content: center;
+}
+
+.td.gst {
+  width: 15mm;
+  justify-content: center;
+}
+
+.td.qty {
+  width: 15mm;
+  justify-content: center;
+}
+
+.td.rate {
+  width: 20mm;
+  justify-content: flex-end;
+  padding-right: 1mm;
+}
+
+.td.per {
+  width: 10mm;
+  justify-content: center;
+}
+
+.td.amount {
+  width: 30mm;
+  justify-content: flex-end;
+  padding-right: 2mm;
+}
+
+/* TAX SECTION */
+.tax-section {
+  height: 15mm;
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+  font-size: 9pt;
+  border-bottom: 1px solid #000;
+}
+
+.tax-row {
+  height: 5mm;
+  display: flex;
+}
+
+.tax-label {
+  width: 85mm;
+  border-right: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 2mm;
+}
+
+.tax-amount {
+  width: 114mm;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 3mm;
+}
+
+/* TOTAL SECTION */
+.total-section {
+  height: 5mm;
+  display: flex;
+  border-top: 1px solid #000;
+  font-weight: bold;
+  font-size: 9pt;
+}
+
+.total-label {
+  width: 85mm;
+  border-right: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 2mm;
+}
+
+.total-amount {
+  width: 114mm;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 3mm;
+}
+
+/* SECTION 3: TERMS & TOTALS (51mm) */
+.section-3 {
+  height: 51mm;
+  border-bottom: 1px solid #000;
+  padding-left: 1mm;
+  padding-right: 1mm;
+  padding-top: 1mm;
+  font-size: 8pt;
+  display: flex;
+  flex-direction: column;
+}
+
+.amount-label {
+  font-weight: bold;
+  margin-bottom: 1mm;
+}
+
+.amount-words {
+  font-weight: bold;
+  font-size: 9pt;
+  margin-bottom: 3mm;
+}
+
+.notes-label {
+  font-weight: bold;
+  margin-top: 3mm;
+  margin-bottom: 1mm;
+}
+
+.notes {
+  font-size: 8pt;
+  line-height: 1.3;
+}
+
+/* SECTION 4: SIGNATURE (11mm) */
+.section-4 {
+  height: 11mm;
+  display: flex;
+  font-size: 9pt;
+}
+
+.signature-left {
+  width: 100mm;
+  border-right: 1px solid #000;
+  padding-left: 1mm;
+  display: flex;
+  align-items: center;
+  font-size: 8pt;
+}
+
+.signature-right {
+  width: 100mm;
+  padding-right: 1mm;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 8pt;
+}
+
+/* FOOTER */
+.invoice-footer {
+  height: 10mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+}
+
+/* PAGE BREAK HANDLING FOR MULTI-PAGE INVOICES */
+@media print {
+  @page {
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .page {
+    page-break-after: always;
+    margin: 0;
+    padding: 0;
+  }
+}

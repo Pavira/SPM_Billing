@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice {{ invoice.invoice_number }}</title>
+    <link rel="stylesheet" href="invoice.css" />
+  </head>
+  <body>
+    <div class="page">
+      <!-- TOP HEADING (Outside Box) -->
+      <div class="invoice-header">
+        <h1>TAX INVOICE</h1>
+      </div>
+
+      <!-- MAIN OUTER BOX -->
+      <div class="invoice-container">
+        <!-- SECTION 1: CONSIGNEE DETAILS (78mm) -->
+        <div class="section-1">
+          <!-- LEFT 60% — 3 equal horizontal sections -->
+          <div class="left-60">
+            <!-- Company Details -->
+            <div class="detail-box company-details">
+              <p class="company-name">{{ company.name }}</p>
+              <p>{{ company.address }}</p>
+              <p>GSTIN/UIN : {{ company.gstin }}</p>
+              <p>
+                State Name : {{ company.state }}, Code : {{ company.state_code
+                }}
+              </p>
+              <p>Contact : {{ invoice.seller_contact }}</p>
+              <p>E-Mail : {{ invoice.seller_email }}</p>
+            </div>
+
+            <!-- Consignee Details -->
+            <div class="detail-box consignee-details">
+              <p class="label">Consignee (Ship to)</p>
+              <p class="name">{{ invoice.consignee.name }}</p>
+              <p>GSTIN/UIN : {{ invoice.consignee.gstin }}</p>
+              <p>PAN/IT No : {{ invoice.consignee.pan_number }}</p>
+              <p>Contact person : {{ invoice.consignee.contact }}</p>
+              <p>Contact : {{ invoice.consignee.phone }}</p>
+            </div>
+
+            <!-- Buyer Details -->
+            <div class="detail-box buyer-details">
+              <p class="label">Buyer (Bill to)</p>
+              <p class="name">{{ invoice.buyer_name }}</p>
+              <p>GSTIN/UIN : {{ invoice.buyer.gstin }}</p>
+              <p>PAN/IT No : {{ invoice.buyer.pan_number }}</p>
+              <p>Delivery Contact person : {{ invoice.delivery_contact }}</p>
+              <p>Mobile : {{ invoice.buyer.phone }}</p>
+            </div>
+          </div>
+
+          <!-- RIGHT 40% — 50:50 horizontal split -->
+          <div class="right-40">
+            <!-- TOP SECTION — Invoice Meta -->
+            <div class="meta-section">
+              <!-- ROW 1 -->
+              <div class="meta-row">
+                <div class="meta-col-left">
+                  <span class="meta-label">Invoice No / e-Way Bill No</span>
+                  <p class="meta-value">{{ invoice.invoice_number }}</p>
+                </div>
+                <div class="meta-col-right">
+                  <span class="meta-label">Dated</span>
+                  <p class="meta-value">{{ invoice.invoice_date }}</p>
+                </div>
+              </div>
+
+              <!-- ROW 2 -->
+              <div class="meta-row">
+                <div class="meta-col-left">
+                  <span class="meta-label">Delivery Note</span>
+                </div>
+                <div class="meta-col-right">{{ invoice.delivery_note }}</div>
+              </div>
+
+              <!-- ROW 3 -->
+              <div class="meta-row">
+                <div class="meta-col-left">
+                  <span class="meta-label">Buyer's Order No.</span>
+                  <p class="meta-value">{{ invoice.po_number }}</p>
+                </div>
+                <div class="meta-col-right">
+                  <span class="meta-label">Dated</span>
+                </div>
+              </div>
+
+              <!-- ROW 4 -->
+              <div class="meta-row">
+                <div class="meta-col-left">
+                  <span class="meta-label">Dispatch Doc No</span>
+                </div>
+                <div class="meta-col-right">{{ invoice.dispatch_doc_no }}</div>
+              </div>
+
+              <!-- ROW 5 -->
+              <div class="meta-row">
+                <div class="meta-col-left">
+                  <span class="meta-label">Order Cutting</span>
+                </div>
+                <div class="meta-col-right">
+                  <span class="meta-label">Destination</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BOTTOM SECTION — Transport / Place of Supply -->
+            <div class="transport-section">
+              <!-- Transport Name, LR No, Place of Supply -->
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: ITEM TABLE (130mm) -->
+        <div class="section-2">
+          <!-- TABLE HEADER -->
+          <div class="table-header">
+            <div class="th si">SI</div>
+            <div class="th description">Description of Goods</div>
+            <div class="th hsn">HSN / SAC</div>
+            <div class="th gst">GST %</div>
+            <div class="th qty">Qty</div>
+            <div class="th rate">Rate</div>
+            <div class="th per">Per</div>
+            <div class="th amount">Amount</div>
+          </div>
+
+          <!-- ITEM ROWS TABLE AREA -->
+          <div class="table-body">
+            {% for item in invoice.items %}
+            <div class="table-row">
+              <div class="td si">{{ loop.index }}</div>
+              <div class="td description">
+                {{ item.description or item.name }}
+              </div>
+              <div class="td hsn">{{ item.hsn }}</div>
+              <div class="td gst">{{ item.gst_percentage }}%</div>
+              <div class="td qty">{{ item.quantity }}</div>
+              <div class="td rate">{{ "item.rate }}</div>
+              <div class="td per">{{ item.uom }}</div>
+              <div class="td amount">
+                {{ "%.2f"|format(item.quantity * item.rate) }}
+              </div>
+            </div>
+            {% endfor %}
+
+            <!-- Empty rows for spacing -->
+            {% set empty_rows = 15 - invoice.items|length %} {% for i in
+            range(empty_rows) %}
+            <div class="table-row empty-row">
+              <div class="td si"></div>
+              <div class="td description"></div>
+              <div class="td hsn"></div>
+              <div class="td gst"></div>
+              <div class="td qty"></div>
+              <div class="td rate"></div>
+              <div class="td per"></div>
+              <div class="td amount"></div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- TAX & TOTAL SECTION -->
+          <div class="tax-section">
+            <div class="tax-row">
+              <div class="tax-label">SGST 9% TAX</div>
+              <div class="tax-amount">
+                {{ "%.2f"|format(invoice.totals.sgst) }}
+              </div>
+            </div>
+            <div class="tax-row">
+              <div class="tax-label">CGST 9% TAX</div>
+              <div class="tax-amount">
+                {{ "%.2f"|format(invoice.totals.cgst) }}
+              </div>
+            </div>
+            <div class="tax-row">
+              <div class="tax-label">Round Off</div>
+              <div class="tax-amount">
+                {{ "%.2f"|format(invoice.totals.round_off) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- TOTAL SECTION -->
+          <div class="total-section">
+            <div class="total-label">Total</div>
+            <div class="total-amount">
+              {{ "%.2f"|format(invoice.totals.total) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: TERMS & TOTALS -->
+        <div class="section-3">
+          <p class="amount-label">Amount Chargeable (in words)</p>
+          <p class="amount-words">{{ invoice.totals.amount_in_words }} Only</p>
+
+          {% if invoice.notes %}
+          <p class="notes-label">Notes:</p>
+          <p class="notes">{{ invoice.notes }}</p>
+          {% endif %}
+        </div>
+
+        <!-- SECTION 4: SIGNATURE -->
+        <div class="section-4">
+          <div class="signature-left">
+            <p>Customer's Seal and Signature</p>
+          </div>
+          <div class="signature-right">
+            <p>for SPM ENGINEERING</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER (Outside Box) -->
+      <div class="invoice-footer">
+        <p>THIS IS COMPUTER GENERATED INVOICE</p>
+      </div>
+    </div>
+  </body>
+</html>
