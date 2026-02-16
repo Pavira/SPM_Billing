@@ -11,7 +11,7 @@ import {
   Printer,
   Download,
 } from "lucide-react";
-import { getAllInvoices, getInvoicePDF } from "@/services/invoice_service";
+import { getAllInvoices } from "@/services/invoice_service";
 
 export default function ListInvoices() {
   const navigate = useNavigate();
@@ -71,6 +71,22 @@ export default function ListInvoices() {
     setSelectedInvoice(null);
   };
 
+  const getDownloadDatePart = (invoice) => {
+    const rawDate =
+      invoice?.created_date || invoice?.created_at || invoice?.invoice_date;
+    if (!rawDate) return "unknown-date";
+
+    const parsed = new Date(rawDate);
+    if (Number.isNaN(parsed.getTime())) {
+      return String(rawDate).replace(/[^\w-]/g, "-");
+    }
+
+    const yyyy = parsed.getFullYear();
+    const mm = String(parsed.getMonth() + 1).padStart(2, "0");
+    const dd = String(parsed.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const handlePrint = async () => {
     if (!selectedInvoice?.id) {
       console.error("Invoice ID not available");
@@ -96,13 +112,20 @@ export default function ListInvoices() {
     }
 
     try {
-      // Get PDF URL from backend
-      const pdfUrl = await getInvoicePDF(selectedInvoice.id);
+      const baseApi = (import.meta.env.VITE_API_URL || "/api/v1").replace(
+        /\/$/,
+        "",
+      );
+      const pdfUrl = `${baseApi}/invoices/${selectedInvoice.id}/pdf?download=1`;
+      const invoicePart = String(
+        selectedInvoice.invoice_number || "invoice",
+      ).replace(/[^\w-]/g, "-");
+      const datePart = getDownloadDatePart(selectedInvoice);
+      const filename = `${invoicePart}-${datePart}.pdf`;
 
-      // Create a temporary link and trigger download
       const link = document.createElement("a");
       link.href = pdfUrl;
-      link.download = `invoice_${selectedInvoice.invoice_number || "document"}.pdf`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

@@ -15,29 +15,30 @@ _db = None
 
 # Test/local function (commented as requested).
 # Keep this for local testing with JSON file, do not use in production.
-# def get_firestore_test():
+# def get_firestore():
 #     global _db
-#
+
 #     if _db:
 #         return _db
-#
+
 #     base_dir = os.path.dirname(os.path.abspath(__file__))
 #     firebase_cred_path = os.path.join(base_dir, "firebase_adminsdk.json")
-#
+
 #     if not os.path.exists(firebase_cred_path):
 #         raise FileNotFoundError(
 #             f"Firebase credential file not found at {firebase_cred_path}"
 #         )
-#
+
 #     if not firebase_admin._apps:
 #         cred = credentials.Certificate(firebase_cred_path)
 #         firebase_admin.initialize_app(cred)
 #         logger.info("Firebase initialized (test/local file)")
-#
+
 #     _db = firestore.client()
 #     return _db
 
 
+# ----------------------------------Firestore Production Initialization----------------------------------
 # Production function for Vercel.
 # Set env var: FIREBASE_ADMINSDK_JSON with the full Firebase service account JSON.
 def get_firestore():

@@ -1,19 +1,26 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { loginWithPin } from "@/services/auth_service";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [pin, setPin] = useState(["", "", "", ""]);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputsRef = useRef([]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    inputsRef.current[0]?.focus();
+  }, []);
+
   async function handleChange(value, index) {
+    if (isSubmitting) return;
     if (!/^\d?$/.test(value)) return;
 
     const newPin = [...pin];
     newPin[index] = value;
     setPin(newPin);
+    if (error) setError("");
 
     if (value && index < 3) {
       inputsRef.current[index + 1].focus();
@@ -21,6 +28,7 @@ export default function Login() {
 
     if (value && index === 3) {
       const enteredPin = newPin.join("");
+      setIsSubmitting(true);
       try {
         await loginWithPin(enteredPin);
         navigate("/dashboard");
@@ -28,11 +36,14 @@ export default function Login() {
         setError("Invalid PIN");
         setPin(["", "", "", ""]);
         inputsRef.current[0].focus();
+      } finally {
+        setIsSubmitting(false);
       }
     }
   }
 
   function handleKeyDown(e, index) {
+    if (isSubmitting) return;
     if (e.key === "Backspace") {
       e.preventDefault();
       const newPin = [...pin];
@@ -62,9 +73,13 @@ export default function Login() {
           {pin.map((digit, index) => (
             <input
               key={index}
-              type="text"
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="one-time-code"
               maxLength="1"
               value={digit}
+              disabled={isSubmitting}
               ref={(el) => (inputsRef.current[index] = el)}
               onChange={(e) => handleChange(e.target.value, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
@@ -74,10 +89,18 @@ export default function Login() {
                 text-center border-2 border-gray-300 rounded-xl
                 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200
                 transition transform focus:scale-105
+                disabled:opacity-70 disabled:cursor-not-allowed
               "
             />
           ))}
         </div>
+
+        {isSubmitting && (
+          <div className="flex items-center justify-center gap-2 text-indigo-700 text-sm sm:text-base font-medium mb-2">
+            <div className="w-4 h-4 border-2 border-indigo-300 border-t-indigo-700 rounded-full animate-spin" />
+            Verifying PIN...
+          </div>
+        )}
 
         {error && (
           <div className="text-red-600 text-sm sm:text-base font-medium mt-2">

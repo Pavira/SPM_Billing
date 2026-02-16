@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from app.services.invoice_service import InvoiceService
 import logging
+from pathlib import Path
 
 from app.core.firebase import get_firestore
 
@@ -228,7 +229,7 @@ def delete_invoice(invoice_id: str):
 
 
 @router.get("/{invoice_id}/pdf")
-async def get_invoice_pdf(invoice_id: str):
+async def get_invoice_pdf(invoice_id: str, download: bool = False):
     """
     Generate and return PDF for an invoice using WeasyPrint
 
@@ -241,9 +242,7 @@ async def get_invoice_pdf(invoice_id: str):
     try:
         from fastapi.responses import StreamingResponse
         from jinja2 import Environment, FileSystemLoader
-        import os
         from weasyprint import HTML, CSS
-        import io
 
         # Get invoice from Firestore
         db = get_firestore()
@@ -270,27 +269,39 @@ async def get_invoice_pdf(invoice_id: str):
             "invoice": invoice_data,
         }
 
-        # Setup Jinja2 environment
-        template_dir = os.path.join(os.path.dirname(__file__), "../../templates")
-        env = Environment(loader=FileSystemLoader(template_dir))
-        template = env.get_template("invoice.html")
+        # Setup Jinja2 environment with absolute path
+        backend_root = Path(__file__).resolve().parents[3]
+        template_dir = backend_root / "app" / "templates"
+        template_name = "SPM_bill.html"
+
+        if not (template_dir / template_name).exists():
+            raise HTTPException(
+                status_code=500,
+                detail=f"Template not found: {template_name} in {template_dir}",
+            )
+
+        env = Environment(loader=FileSystemLoader(str(template_dir)))
+        template = env.get_template(template_name)
 
         # Render HTML from Jinja2 template
         html_content = template.render(template_data)
 
         # Get CSS
-        css_path = os.path.join(template_dir, "invoice.css")
-        css = CSS(string=open(css_path).read())
+        css_path = template_dir / "spm_bill.css"
+        css = CSS(string=css_path.read_text(encoding="utf-8"))
 
         # Generate PDF using WeasyPrint
         pdf_bytes = HTML(string=html_content).write_pdf(stylesheets=[css])
+
+        filename = f"invoice_{invoice_data.get('invoice_number', 'document')}.pdf"
+        disposition = "attachment" if download else "inline"
 
         # Return PDF
         return StreamingResponse(
             iter([pdf_bytes]),
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"inline; filename=invoice_{invoice_data.get('invoice_number', 'document')}.pdf"
+                "Content-Disposition": f'{disposition}; filename="{filename}"'
             },
         )
 

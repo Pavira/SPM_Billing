@@ -275,6 +275,97 @@ export default function AddInvoice() {
     return `${inWords(num)} Rupees Only`;
   };
 
+  const buildInvoicePayload = () => {
+    // Calculate totals once
+    let subtotal = 0;
+    items.forEach((item) => {
+      const amount =
+        (parseFloat(item.quantity) || 0) * (parseFloat(item.rate) || 0);
+      subtotal += amount;
+    });
+
+    const gstRate = parseFloat(items[0]?.gst) || 0;
+    const sgst = (subtotal * gstRate) / 2 / 100;
+    const cgst = (subtotal * gstRate) / 2 / 100;
+    const rawTotal = subtotal + sgst + cgst;
+
+    // Compute rounded integer total per requirement: if fractional part > 0.5 -> ceil, else -> floor
+    const fraction = rawTotal - Math.floor(rawTotal);
+    const roundedTotal =
+      fraction > 0.5 ? Math.ceil(rawTotal) : Math.floor(rawTotal);
+    const roundOffDifference = parseFloat((roundedTotal - rawTotal).toFixed(2));
+
+    // Find full buyer and consignee details
+    const buyerDetails = customers.find((c) => c.name === formData.buyerName);
+    const consigneeDetails = customers.find(
+      (c) => c.name === formData.consigneeName,
+    );
+
+    // Format items for API
+    const formattedItems = items.map((item) => ({
+      // convert item_id to string
+      item_id: String(item.id),
+      name: item.itemName,
+      hsn: item.hsn,
+      uom: item.uom,
+      quantity: item.quantity,
+      rate: item.rate,
+      gst_percentage: item.gst,
+      amount: parseFloat(item.quantity) * parseFloat(item.rate),
+    }));
+
+    return {
+      invoice_number: formData.invoiceNumber,
+      invoice_date: formData.invoiceDate,
+      po_number: formData.poNumber || "",
+      buyer: {
+        id: buyerDetails?.id || "",
+        name: buyerDetails?.name || formData.buyerName,
+        gstin: buyerDetails?.gstin || formData.buyerGstin || "",
+        address: buyerDetails?.address || "",
+        email: buyerDetails?.email || "",
+        panNumber: buyerDetails?.panNumber || "",
+        phone: buyerDetails?.phone || "",
+      },
+      consignee: {
+        id: consigneeDetails?.id || "",
+        name: consigneeDetails?.name || formData.consigneeName,
+        gstin: consigneeDetails?.gstin || formData.consigneeGstin || "",
+        address: consigneeDetails?.address || "",
+        email: consigneeDetails?.email || "",
+        panNumber: consigneeDetails?.panNumber || "",
+        phone: consigneeDetails?.phone || "",
+      },
+      items: formattedItems,
+      totals: {
+        subtotal: subtotal,
+        sgst: sgst,
+        cgst: cgst,
+        // store the round off difference and the adjusted integer total
+        round_off: roundOffDifference,
+        rounded_total: roundedTotal,
+        total: roundedTotal,
+        amount_in_words: numberToWords(roundedTotal),
+      },
+    };
+  };
+
+  const handlePreview = () => {
+    if (!formData.buyerName || !formData.consigneeName) {
+      toast.error("Please select both buyer and consignee");
+      return;
+    }
+
+    if (items.some((item) => !item.itemName || !item.quantity || !item.rate)) {
+      toast.error("Please fill all item details");
+      return;
+    }
+
+    const previewData = buildInvoicePayload();
+    sessionStorage.setItem("invoice_preview_data", JSON.stringify(previewData));
+    window.open("/SPM_bill.html?preview=1", "_blank", "noopener");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -292,80 +383,9 @@ export default function AddInvoice() {
     setIsSubmitting(true);
 
     try {
-      // Calculate totals once
-      let subtotal = 0;
-      items.forEach((item) => {
-        const amount =
-          (parseFloat(item.quantity) || 0) * (parseFloat(item.rate) || 0);
-        subtotal += amount;
-      });
-
-      const gstRate = parseFloat(items[0]?.gst) || 0;
-      const sgst = (subtotal * gstRate) / 2 / 100;
-      const cgst = (subtotal * gstRate) / 2 / 100;
-      const rawTotal = subtotal + sgst + cgst;
-
-      // Compute rounded integer total per requirement: if fractional part > 0.5 -> ceil, else -> floor
-      const fraction = rawTotal - Math.floor(rawTotal);
-      const roundedTotal =
-        fraction > 0.5 ? Math.ceil(rawTotal) : Math.floor(rawTotal);
-      const roundOffDifference = parseFloat(
-        (roundedTotal - rawTotal).toFixed(2),
-      );
-
-      // Find full buyer and consignee details
-      const buyerDetails = customers.find((c) => c.name === formData.buyerName);
-      const consigneeDetails = customers.find(
-        (c) => c.name === formData.consigneeName,
-      );
-
-      // Format items for API
-      const formattedItems = items.map((item) => ({
-        // convert item_id to string
-        item_id: String(item.id),
-        name: item.itemName,
-        hsn: item.hsn,
-        uom: item.uom,
-        quantity: item.quantity,
-        rate: item.rate,
-        gst_percentage: item.gst,
-        amount: parseFloat(item.quantity) * parseFloat(item.rate),
-      }));
-
-      // Prepare invoice payload
-      const invoicePayload = {
-        invoice_date: formData.invoiceDate,
-        po_number: formData.poNumber || "",
-        buyer: {
-          id: buyerDetails?.id || "",
-          name: buyerDetails?.name || formData.buyerName,
-          gstin: buyerDetails?.gstin || formData.buyerGstin || "",
-          address: buyerDetails?.address || "",
-          email: buyerDetails?.email || "",
-          panNumber: buyerDetails?.panNumber || "",
-          phone: buyerDetails?.phone || "",
-        },
-        consignee: {
-          id: consigneeDetails?.id || "",
-          name: consigneeDetails?.name || formData.consigneeName,
-          gstin: consigneeDetails?.gstin || formData.consigneeGstin || "",
-          address: consigneeDetails?.address || "",
-          email: consigneeDetails?.email || "",
-          panNumber: consigneeDetails?.panNumber || "",
-          phone: consigneeDetails?.phone || "",
-        },
-        items: formattedItems,
-        totals: {
-          subtotal: subtotal,
-          sgst: sgst,
-          cgst: cgst,
-          // store the round off difference and the adjusted integer total
-          round_off: roundOffDifference,
-          rounded_total: roundedTotal,
-          total: roundedTotal,
-          amount_in_words: numberToWords(roundedTotal),
-        },
-      };
+      const invoicePayload = buildInvoicePayload();
+      // backend create schema does not include invoice_number
+      delete invoicePayload.invoice_number;
       console.log("Invoice Payload:", invoicePayload);
 
       // Call API to create invoice
@@ -392,8 +412,36 @@ export default function AddInvoice() {
     }
   };
 
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="w-full">
+          <div className="bg-white rounded-2xl shadow-lg p-8 min-h-[320px] flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3 text-purple-700">
+              <Loader size={30} className="animate-spin" />
+              <p className="text-sm font-medium text-gray-600">
+                Loading invoice data...
+              </p>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-white/90 rounded-2xl shadow-xl px-6 py-5 flex items-center gap-3">
+            <Loader size={24} className="animate-spin text-purple-700" />
+            <p className="text-sm font-semibold text-gray-700">
+              Creating invoice...
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="w-full">
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -800,6 +848,14 @@ export default function AddInvoice() {
 
             {/* Form Actions */}
             <div className="flex gap-4 pt-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={handlePreview}
+                disabled={isSubmitting}
+                className="flex-1 bg-white border border-purple-600 text-purple-700 hover:bg-purple-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 font-semibold py-3 rounded-lg transition duration-200"
+              >
+                Preview Invoice
+              </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
