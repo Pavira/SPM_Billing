@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
 import ListInvoices from "../pages/invoices/ListInvoices";
@@ -23,7 +23,7 @@ function LogoutRedirect() {
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/logout" element={<LogoutRedirect />} />
@@ -38,6 +38,6 @@ export default function AppRouter() {
         <Route path="/items/add" element={<AddItem />} />
         <Route path="/items/:itemId" element={<UpdateItem />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
